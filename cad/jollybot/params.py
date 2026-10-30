@@ -36,7 +36,7 @@ BEARING_POCKET_D = 65.2      # puck pocket for the outer race (tune with coupons
 BUSHING_RJ4JP = dict(id=8.0, od=15.0, l=24.0)
 BUSHING_BORE_D = 15.0        # carrier bore (tune with coupons/)
 SHAFT_D = 8.0
-UJOINT = dict(d=10.0, l=23.0, bore=5.0)   # 5x5 steel universal-joint coupler (verify length of the one you buy)
+UJOINT = dict(d=11.0, l=23.0, bore=5.0)   # 5x5 steel universal-joint coupler as sold: Ø11 × 22–23 mm with M4 grub screws
 BALL_STUD_D = 4.75           # Align T-Rex 450 linkage ball, M2
 MAGNET = dict(d=5.0, t=2.0)
 GT2 = dict(pitch=2.0, tooth_depth=0.75, pld=0.254)   # pitch-line offset
@@ -70,8 +70,8 @@ HORN_AXIS_H = PUCK_FLOOR_TOP + SERVO.h - SERVO.horn_from_top   # 40
 HORN_ARM_R = 20.0
 BALL_R = 30.0
 ROD_L = 60.0
-YAW_SERVO_R, YAW_SERVO_AZ = 50.5, 150.0   # pulley PD 19.1 leaves ~3 mm belt gap to the ring OD (r 37.9)
-YAW_PULLEY_TEETH = 30
+YAW_SERVO_R, YAW_SERVO_AZ = 49.8, 150.0   # centre distance for a stocked 130T/260 mm GT2 belt with a 20T pulley (6:1); yaw servo = XL330-M077-T
+YAW_PULLEY_TEETH = 20
 YAW_PULLEY_PD = YAW_PULLEY_TEETH * GT2["pitch"] / math.pi
 HALL_R = 35.0
 BORE_D = 50.0                 # clock-spring bore through the puck floor
@@ -104,7 +104,7 @@ SHELL_SPLIT_PLANE = "XZ"                            # front / back halves
 EYE_LINE_H = 123.0
 EYE_SPACING = 50.0
 EYE_WELL_D = 16.0
-EYE_INSERT_D = 5.6                                  # M4 heat-set insert hole
+EYE_INSERT_D = 5.6                                  # M4 heat-set insert hole; eye = 10 mm glass cabochon epoxied to an M4 pan-head screw
 CHEEK_D, CHEEK_DX, CHEEK_DY = 20.0, 37.0, -8.0      # LED diffuser pockets
 SHOULDER_H = 110.0
 SHOULDER_AZ_FROM_FRONT = 70.0

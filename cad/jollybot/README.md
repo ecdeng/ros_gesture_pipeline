@@ -28,6 +28,10 @@ U-joint cross at h ≈72, lower than the plan's h 90 estimate; the neck ring (h 
 - Horn arms: flat, 100 % infill. Spine plate: flat, ears up. Head halves: open side down, 2 perimeters.
 - Everything PETG except TPU servo pads and bumpers (not modelled).
 
+## Sourcing
+See `SOURCING.md` for vendors, part numbers, prices and stock notes (researched 2026-10-30). Three sourcing-driven
+changes are already in `params.py`: 130T belt + 20T pulley on an XL330-M077 yaw servo, Ø11×23 U-joint, cabochon-on-M4 eyes.
+
 ## Still to do in CAD
 - Horn arm hub against the real XL330-M288-T horn (download the STEP; `SERVO.horn_hub_d` is a guess).
 - Servo cradle screw holes once the XL330 side-hole pattern is confirmed; currently friction pockets.
