@@ -31,15 +31,15 @@ def head_shell(split=True):
     shell += neck
     # face plate: a flat chord at the front (+Y) with eye wells, insert bosses and cheek pockets
     y_face = P.shell_r(P.EYE_LINE_H) - 3.0
-    plate = box(84, 3, 62, 0, y_face + 1.5, P.EYE_LINE_H - 26)
+    plate = box(84, 3, 62, 0, y_face + 1.5, P.EYE_LINE_H - 26) & solid   # keep the plate inside the shell surface
     shell += plate
     for sx in (-1, 1):
         ex = sx * P.EYE_SPACING / 2
         shell -= Pos(ex, y_face - 2, P.EYE_LINE_H) * Rot(90, 0, 0) * Cylinder(P.EYE_WELL_D / 2, 2.0)      # 2 mm well
         shell -= Pos(ex, y_face + 6, P.EYE_LINE_H) * Rot(90, 0, 0) * Cylinder(P.EYE_INSERT_D / 2, 12)     # M4 insert
         shell -= Pos(ex + sx * P.CHEEK_DX - sx * P.EYE_SPACING / 2 * 0, y_face + 6, P.EYE_LINE_H + P.CHEEK_DY) * Rot(90, 0, 0) * Cylinder(P.CHEEK_D / 2, 12)
-    # camera window behind the robot's-left eye (robot left = -X when front is +Y)
-    shell -= box(26, 12, 26, -P.EYE_SPACING / 2, y_face - 6, P.EYE_LINE_H - 13)
+    # camera looks out through the left pupil: the board registers on the plate's inner face (no window in the shell)
+    shell -= Pos(-P.EYE_SPACING / 2, y_face + 2, P.EYE_LINE_H) * Rot(90, 0, 0) * Cylinder(3.0, 12)
     # shoulder pockets with horn extension bores at SHOULDER_H, 70° from front
     for sx in (-1, 1):
         az = 90 - sx * P.SHOULDER_AZ_FROM_FRONT
@@ -58,7 +58,7 @@ def head_shell(split=True):
             shell -= Pos(sx * r, 0, h) * Rot(90, 0, 0) * Cylinder(2.3, 10)
     # crown mesh port + chin vent
     shell -= cyl(12, 10, P.HEAD_TOP_H - 5)
-    shell -= box(30, 10, 12, 0, P.shell_r(P.NECK_H0 + 8) - 2, P.NECK_H0 + 6)
+    shell -= box(24, 10, 6, 0, P.shell_r(P.NECK_H0 + 6) - 2, P.NECK_H0 + 4)
     shell.label = "head_shell"
     if not split:
         return [shell]
