@@ -1,6 +1,8 @@
 # Jolly-bot Character Studio
 
-A single-file web tool for designing the robot's body language before any hardware exists.
+A single-file web tool for designing a character's body language before any hardware exists. Three switchable
+embodiments: the Jolly bean from the CAD, a Pixar-style articulated desk lamp, and an ElliQ-style companion head.
+Each has its own channels, limits, example moves and prompt; the character bible is kept per embodiment.
 Type a line the robot says, get three animated options rendered in three.js on the real six channels
 (yaw, pitch, roll, bob, two arm flaps, plus cheek glow and catchlight blinks), keep the one that fits,
 and the pick and your notes go into a "character bible" that steers the next round.
