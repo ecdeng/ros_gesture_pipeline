@@ -45,7 +45,7 @@ GT2 = dict(pitch=2.0, tooth_depth=0.75, pld=0.254)   # pitch-line offset
 TRAY_D = 130.0
 TRAY_H = 14.0
 TRAY_FLOOR_T = 2.0
-STEEL_D, STEEL_T, STEEL_N = 110.0, 3.0, 2
+STEEL_D, STEEL_T, STEEL_N = 114.3, 3.2, 2   # Wagner D240: 4.5 in × 1/8 in steel disc, ≈256 g each
 FEET_R, FEET_D, FEET_DEPTH = 50.0, 10.0, 1.0
 RING_TEETH = 120
 RING_PD = RING_TEETH * GT2["pitch"] / math.pi          # 76.39
