@@ -11,13 +11,13 @@ Prices are what vendor pages showed on the research date; stock changes weekly. 
 - **Eyes**: no threaded-shank 10 mm toy eye exists; the design is a 10 mm glass cabochon epoxied to an M4 pan-head screw into the face-plate insert.
 - **Audio HAT**: the ReSpeaker 2-Mics HAT is now V2 (TLV320AIC3104) and needs the `respeaker-2mic-v2_0` overlay from Seeed's dtoverlays repo, not `wm8960-soundcard`.
 - **Power connector**: no reputable magnetic breakaway barrel adapter was found; use a right-angle plug and anchor the cord to the desk instead.
-- **Controller**: OpenRB-150 and all X330 parts are sold out at Robotis US (1–4 month leads). Either buy XL330s from an EU reseller (~€40) or use the in-stock U2D2 and let the Pi speak Dynamixel directly.
+- **Servos and controller**: Robotis US is sold out of X330 parts and OpenRB-150, and Generation Robots now quotes 8 weeks. Genuine XL330s are in stock at Seeed as Reachy Mini spares (pre-set IDs, $31.40). Pair them with the in-stock U2D2 and let the Pi speak Dynamixel directly.
 - **Foam**: 3/8 in open-cell sheet isn't stocked; buy ½ in and shave, or reduce `LAYER_STACK` air gap.
 
 ## Stock risks to act on first
 
 1. Pi Zero 2 W: one per order at PiShop, out of stock elsewhere — order today.
-2. XL330s and OpenRB-150: US lead times; EU resellers have XL330 stock.
+2. Servos: buy the Seeed Reachy Mini XL330 spares (No.1–5 + R) and a U2D2 from RobotShop now; OpenRB-150 is sold out everywhere checked.
 3. Pololu regulators are rationed.
 4. Align ball links (H45045) are out of stock at US hobby shops; the eBay CopterX set is the stand-in.
 
@@ -25,8 +25,9 @@ Prices are what vendor pages showed on the research date; stock changes weekly. 
 
 | Item | Qty | Vendor | SKU / URL | Unit | Ext. | Status | Notes |
 |---|---|---|---|---|---|---|---|
-| Dynamixel XL330-M288-T (3 tilt + 2 arms) | 5 | ROBOTIS US | 902-0163-000 · https://www.robotis.us/dynamixel-xl330-m288-t/ | $27.49 | $137.45 | SOLD OUT, ~2-month lead. EU stock: Generation Robots €40.20 | Ships with one 180 mm X3P cable + horn/frame screws. Default ID 1 @ 57600. |
-| Dynamixel XL330-M077-T (yaw) | 1 | ROBOTIS US | https://www.robotis.us/dynamixel-xl330-m077-t/ | $27.49 | $27.49 | SOLD OUT (price and specs confirmed on the Robotis page 2026-10-31: 383 rpm, 0.215 N·m) | Faster gear ratio (≈383 rpm no-load) so yaw saccades stay quick through the 6:1 belt; torque 0.22 N·m is 5× what yaw needs. |
+| **Buy today:** Dynamixel XL330-M288-T, Seeed "Reachy Mini" spares No.1–No.5 (one of each) | 5 | Seeed Studio | e.g. No.1 https://www.seeedstudio.com/Servo-Motor-1-5V-103RPM-Brush-mm-p-6783.html · No.2 https://www.seeedstudio.com/Servo-Motor-2-5V-103RPM-Brush-mm-p-6786.html (No.3–6 linked from the same page) | $31.40 | $157.00 | IN STOCK (China warehouse), checked 2026-10-31. Limit 2 per SKU per account | Genuine XL330-M288-T. Each number ships pre-set to that ID (1–5), so no ID setup. Servo arm included; cable not listed, so plan on JST EH 3-pin leads. |
+| **Buy today:** Dynamixel XL330-M077-T (yaw), Seeed "Reachy Mini" spare R | 1 | Seeed Studio | https://www.seeedstudio.com/Servo-Motor-R-5V-383RPM-Brush-mm-p-6784.html (L variant: …-p-6788.html) | $31.40 | $31.40 | IN STOCK, limit 2 | Fast M077 for the 6:1 yaw belt. Pre-set ID is a letter, not a number: change it to 6 in Dynamixel Wizard. |
+| Dynamixel XL330-M288-T / M077-T (Robotis US) | alt | ROBOTIS US | 902-0163-000 · https://www.robotis.us/dynamixel-xl330-m288-t/ | $27.49 | $0.00 | SOLD OUT, ~2-month lead. Generation Robots (EU) now also quotes 8 weeks | Cheaper per unit if you can wait. |
 | OpenRB-150 controller | 1 | ROBOTIS US | 902-0183-000 · https://www.robotis.us/openrb-150/ | $28.64 | $28.64 | SOLD OUT in US; RoboSavvy UK £24.25 | 4× TTL 3-pin ports, DXL bus up to 3 A, VIN 3.7–12.6 V (feed exactly 5 V for XL330), USB-C powers the MCU. Bus FET off at boot. |
 | Alt: U2D2 USB adapter | alt | RobotShop | RB-Rbi-251 · https://www.robotshop.com/products/robotis-u2d2-usb-to-serial-adapter-for-dynamixel | $46.76 | $0.00 | IN STOCK — fallback if OpenRB stays unavailable | Pi runs the Dynamixel SDK directly; inject 5 V into the chain with a hand-made 3-pin splice (Power Hub is sold out, 18-wk lead). |
 | Alt budget: Feetech STS3215 7.4 V ×6 + Waveshare Bus Servo Adapter (A) | alt | Waveshare / Seeed | SKU 33014 $16.99 · https://www.waveshare.com/st3215-servo.htm?sku=33014 ; adapter SKU 25514 $4.99 | $106.93 | $0.00 | In stock, ships from CN | Needs its own 7.4 V buck; no current-based compliance. Don't buy the 12 V variant (SKU 22414). |
