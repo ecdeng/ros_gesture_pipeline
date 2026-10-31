@@ -47,7 +47,7 @@ python3 analysis/torque_check.py
 python3 render.py
 
 # Mock drawings for the deck
-python3 docs/art/gen_mocks.py
+cd ../.. && python3 docs/art/gen_mocks.py
 ```
 
 Open `character-studio/index.html` in a browser to run the studio from the built-in motion library; published as
