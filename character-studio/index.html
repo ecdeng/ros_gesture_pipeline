@@ -1,3 +1,11 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style>
+</head>
+<body>
 <title>Jolly-bot Character Studio</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400..700&family=Nunito+Sans:wght@400;600;700&display=swap">
@@ -593,8 +601,27 @@ const bibleFor = () => bibleAll.filter(b => (b.embodiment || 'bean') === emb.id)
 const roundsFor = () => roundsAll.filter(r => (r.embodiment || 'bean') === emb.id);
 const capStatus = document.getElementById('capStatus'), banner = document.getElementById('banner'), genStatus = document.getElementById('genStatus');
 function setBanner(t) { banner.textContent = t; banner.classList.toggle('show', !!t); }
+let apiMode = false, apiGuarded = false;
+const LS = { get(k, d) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } }, set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} } };
+function persistLocal() { if (db) return; LS.set('studio-bible', bibleAll.slice(0, 200)); LS.set('studio-rounds', roundsAll.slice(0, 60)); }
+function passcodeUI() {
+  banner.innerHTML = '<span>This studio asks for a passcode before it spends the owner\'s Claude usage. </span><input type="password" id="passcode" placeholder="passcode" style="width:12ch;font:inherit;padding:4px 8px;border-radius:7px;border:1px solid var(--line);background:var(--bg);color:var(--fg)"> <button class="small" id="passOk">Use it</button>';
+  banner.classList.add('show');
+  banner.querySelector('#passOk').onclick = () => { LS.set('studio-pass', banner.querySelector('#passcode').value); setBanner(''); genStatus.textContent = 'Passcode saved for this browser.'; };
+}
 (async () => {
-  if (!window.claude || typeof window.claude.use !== 'function') { setBanner('Opened outside the Claude viewer: using the built-in motion library, picks stay in this tab.'); return; }
+  if (!window.claude || typeof window.claude.use !== 'function') {
+    bibleAll = LS.get('studio-bible', []); roundsAll = LS.get('studio-rounds', []); renderBible(); renderHist();
+    if (/^https?:/.test(location.protocol)) {
+      try {
+        const r = await fetch('/api/design', { cache: 'no-store' }); const info = r.ok ? await r.json() : null;
+        if (info && info.claude) { apiMode = true; apiGuarded = !!info.protected; capStatus.textContent = 'Claude designs the moves (server) · bible kept in this browser'; if (apiGuarded && !LS.get('studio-pass', '')) passcodeUI(); return; }
+        if (info) { capStatus.textContent = 'built-in motion library · bible kept in this browser'; setBanner('No Claude key is configured on the server (set ANTHROPIC_API_KEY in Vercel), so the Design button composes from the built-in motion library.'); return; }
+      } catch (e) {}
+    }
+    capStatus.textContent = 'built-in motion library · bible kept in this browser';
+    setBanner('Opened outside the Claude viewer: using the built-in motion library; picks stay in this browser.'); return;
+  }
   const [s, d, dl] = await Promise.all([claude.use('sample'), claude.use('db'), claude.use('downloads')]);
   sampleFn = s; db = d; downloads = dl;
   capStatus.textContent = [s ? 'Claude designs the moves' : 'built-in motion library only', d ? 'bible saved' : 'bible kept in this tab'].join(' · ');
@@ -612,7 +639,7 @@ function renderBible() {
   for (const b of list) {
     const d = document.createElement('div'); d.className = 'note';
     d.innerHTML = `<div><div class="k">${b.kind === 'pick' ? 'from a pick' : 'rule'}</div><div>${esc(b.text)}</div></div><button class="ghost small" aria-label="Remove">✕</button>`;
-    d.querySelector('button').onclick = async () => { if (db && !String(b.id).startsWith('local')) { try { await db.collection('bible').doc(b.id).delete(); } catch (e) {} } else { bibleAll = bibleAll.filter(x => x !== b); renderBible(); } };
+    d.querySelector('button').onclick = async () => { if (db && !String(b.id).startsWith('local')) { try { await db.collection('bible').doc(b.id).delete(); } catch (e) {} } else { bibleAll = bibleAll.filter(x => x !== b); renderBible(); persistLocal(); } };
     el.appendChild(d);
   }
 }
@@ -625,7 +652,7 @@ document.getElementById('addNote').onclick = async () => {
   const inp = document.getElementById('noteText'); const text = inp.value.trim(); if (!text) return;
   const entry = { text, kind: 'note', embodiment: emb.id, createdAt: Date.now() }; inp.value = '';
   if (db) { try { await db.collection('bible').add(entry); return; } catch (e) {} }
-  bibleAll.unshift({ id: 'local' + Date.now(), ...entry }); renderBible();
+  bibleAll.unshift({ id: 'local' + Date.now(), ...entry }); renderBible(); persistLocal();
 };
 async function savePick() {
   const v = variants[selected]; const notes = (document.getElementById('notes') || {}).value || ''; const st = document.getElementById('pickStatus');
@@ -636,12 +663,15 @@ async function savePick() {
   if (db) { try { const ref = await db.collection('rounds').add(round); entry.round = ref.id; await db.collection('bible').add(entry); st.textContent = 'Kept. It will shape the next round.'; return; }
     catch (e) { st.textContent = e && e.code === 'quota_exceeded' ? 'Storage is full: remove old rounds first.' : 'Could not save; kept in this tab.'; } }
   else st.textContent = 'Kept in this tab.';
-  bibleAll.unshift({ id: 'local' + Date.now(), ...entry }); roundsAll.unshift(round); renderBible(); renderHist();
+  bibleAll.unshift({ id: 'local' + Date.now(), ...entry }); roundsAll.unshift(round); renderBible(); renderHist(); persistLocal();
 }
 async function exportClip() {
   const v = variants[selected]; const st = document.getElementById('pickStatus');
   const data = JSON.stringify({ format: 'studio-clip-2', embodiment: emb.id, channels: emb.units, line: document.getElementById('line').value, ...v }, null, 2);
-  if (!downloads) { st.textContent = 'Downloads are not available in this view.'; return; }
+  if (!downloads) {
+    if (!window.claude) { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([data], { type: 'application/json' })); a.download = emb.id + '-' + v.name.toLowerCase().replace(/[^a-z0-9]+/g, '-') + '.json'; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 2000); st.textContent = 'Saved.'; return; }
+    st.textContent = 'Downloads are not available in this view.'; return;
+  }
   try { await downloads.save({ filename: emb.id + '-' + v.name.toLowerCase().replace(/[^a-z0-9]+/g, '-') + '.json', data }); st.textContent = 'Saved.'; }
   catch (e) { st.textContent = e && e.code === 'declined' ? '' : 'Could not save the file.'; }
 }
@@ -674,14 +704,35 @@ Produce THREE clearly different behaviours for this line, each a different read 
  "speech":{"words":[{"w":"How","t":0.5},{"w":"was","t":0.72}]},"blinks":[1.9]}, ...two more...]}
 Rules for keys: 4–8 keys per clip, times ascending starting at 0, every channel optional (missing = unchanged), "ease" one of inout|out|in|linear|snap. Speech words must be the line's words in order with rising times inside the clip.`;
 }
+function tolerantJson(text) {
+  try { return JSON.parse(text); } catch (e) {}
+  const fence = text.match(/```(?:json)?\s*([\s\S]*?)```/); if (fence) { try { return JSON.parse(fence[1]); } catch (e) {} }
+  const a = text.indexOf('{'), b = text.lastIndexOf('}'); if (a >= 0 && b > a) { try { return JSON.parse(text.slice(a, b + 1)); } catch (e) {} }
+  throw { code: 'invalid_json', message: 'no JSON in reply', text };
+}
+async function serverDesign(prompt, signal) {
+  let r;
+  try { r = await fetch('/api/design', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ prompt, passcode: LS.get('studio-pass', '') }), signal }); }
+  catch (e) { throw { code: e && e.name === 'AbortError' ? 'cancelled' : 'upstream_error', message: String(e) }; }
+  const data = await r.json().catch(() => ({}));
+  if (r.status === 401) { LS.set('studio-pass', ''); passcodeUI(); throw { code: 'passcode', message: 'wrong passcode' }; }
+  if (r.status === 429) throw { code: 'rate_limited', message: 'rate limited' };
+  if (r.status === 422) throw { code: 'refused', message: 'refused' };
+  if (r.status === 503) { apiMode = false; throw { code: 'not_granted', message: 'no key' }; }
+  if (!r.ok) throw { code: 'upstream_error', message: data.message || r.statusText };
+  return tolerantJson(data.text || '');
+}
 async function design() {
   const line = document.getElementById('line').value.trim(); if (!line) { genStatus.textContent = 'Type a line first.'; return; }
   const situation = document.getElementById('situation').value.trim();
-  if (!sampleFn) { variants = offlineVariants(line); exampleSet = false; selected = 0; tPlay = 0; renderCards(); genStatus.textContent = 'Composed from the built-in library (Claude is not available here).'; return; }
+  if (!sampleFn && !apiMode) { variants = offlineVariants(line); exampleSet = false; selected = 0; tPlay = 0; renderCards(); genStatus.textContent = 'Composed from the built-in library (Claude is not available here).'; return; }
+  if (apiMode && apiGuarded && !LS.get('studio-pass', '')) { passcodeUI(); genStatus.textContent = 'Enter the passcode first.'; return; }
   designBtn.disabled = true; stopBtn.hidden = false; genStatus.className = 'status'; genStatus.textContent = 'Thinking…';
   ctl = new AbortController(); const embAtCall = emb;
   try {
-    const res = await sampleFn.json(buildPrompt(line, situation), { signal: ctl.signal, cache: false, onText: () => { genStatus.textContent = 'Writing the moves…'; } });
+    let res;
+    if (sampleFn) res = await sampleFn.json(buildPrompt(line, situation), { signal: ctl.signal, cache: false, onText: () => { genStatus.textContent = 'Writing the moves…'; } });
+    else res = await serverDesign(buildPrompt(line, situation), ctl.signal);
     const list = res && Array.isArray(res.variants) ? res.variants.slice(0, 3) : [];
     if (list.length < 2) throw { code: 'invalid_json', message: 'too few variants' };
     if (embAtCall !== emb) setEmb(embAtCall.id);
@@ -691,7 +742,8 @@ async function design() {
   } catch (e) {
     const code = e && e.code;
     if (code === 'cancelled') genStatus.textContent = 'Stopped.';
-    else if (code === 'not_granted' || code === 'sampling_disabled' || code === 'not_declared') { sampleFn = null; setBanner('Claude generation was not allowed for this page, so the Design button composes from the built-in motion library.'); genStatus.textContent = ''; }
+    else if (code === 'passcode') { genStatus.className = 'status err'; genStatus.textContent = 'That passcode was not accepted.'; }
+    else if (code === 'not_granted' || code === 'sampling_disabled' || code === 'not_declared') { sampleFn = null; setBanner(apiMode === false && !window.claude ? 'No Claude key is configured on the server, so the Design button composes from the built-in motion library.' : 'Claude generation was not allowed for this page, so the Design button composes from the built-in motion library.'); genStatus.textContent = ''; }
     else if (code === 'rate_limited') { genStatus.className = 'status err'; genStatus.textContent = 'Claude is busy or your usage limit is reached. Try again in a bit.'; }
     else if (code === 'invalid_json' || code === 'empty_completion') { genStatus.className = 'status err'; genStatus.textContent = 'The answer did not come back as clips. Try again, or shorten the line.'; }
     else if (code === 'refused') { genStatus.className = 'status err'; genStatus.textContent = 'Claude declined this line. Try a different one.'; }
@@ -707,3 +759,6 @@ emb = EMB[startId]; variants = offlineVariants(document.getElementById('line').v
 document.getElementById('phys').textContent = emb.phys; renderEmbToggle(); buildStage(); renderCards(); renderBible(); renderHist();
 })();
 </script>
+
+</body>
+</html>

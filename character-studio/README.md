@@ -13,3 +13,6 @@ built-in motion library and picks stay in the tab.
 
 Every generated clip is clamped to the hardware limits from `cad/jollybot/analysis/TORQUE_CHECK.md`
 (ranges, speeds, combined-tilt cap) and can be downloaded as JSON for the animation engine on the Pi.
+
+`index.html` is the same page wrapped in a full HTML document for plain hosting (Vercel); the claude.ai artifact is
+published from the unwrapped fragment, which the viewer wraps itself.

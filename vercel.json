@@ -1,0 +1,4 @@
+{
+  "outputDirectory": "character-studio",
+  "functions": { "api/design.js": { "maxDuration": 60 } }
+}

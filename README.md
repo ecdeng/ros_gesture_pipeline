@@ -52,3 +52,19 @@ cd ../.. && python3 docs/art/gen_mocks.py
 
 Open `character-studio/index.html` in a browser to run the studio from the built-in motion library; published as
 a claude.ai artifact it asks Claude for the moves and keeps the character bible.
+
+## Hosting on Vercel
+
+`vercel.json` serves `character-studio/` as the site and deploys `api/design.js` as a serverless function that
+relays the studio's prompt to Claude with the official SDK (`@anthropic-ai/sdk`). Connect the repo to a Vercel
+project, then set these environment variables in the project settings and redeploy:
+
+| Variable | Required | Meaning |
+|---|---|---|
+| `ANTHROPIC_API_KEY` | yes, for generation | Without it the site still runs, but the Design button uses the built-in motion library |
+| `STUDIO_PASSWORD` | recommended | A shared passcode the page asks for once per browser, so a public URL cannot spend your key |
+| `STUDIO_MODEL` | no | Defaults to `claude-opus-5-5` |
+| `STUDIO_EFFORT` | no | Defaults to `low`; raise to `medium` or `high` for more considered clips at the cost of latency |
+
+On the hosted site the character bible and rounds are kept in the browser's local storage, and clips download
+as plain JSON files.
