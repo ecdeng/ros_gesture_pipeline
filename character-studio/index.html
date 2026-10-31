@@ -1,0 +1,523 @@
+<title>Jolly-bot Character Studio</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400..700&family=Nunito+Sans:wght@400;600;700&display=swap">
+<style>
+/* Layout: a brief bar on top, a wide stage with three robots, three option cards under it, the character bible beside/below. */
+:root {
+  --bg: #f6f1e7; --panel: #fdfbf6; --line: #e2d9c8; --fg: #2b2622; --muted: #6f655a;
+  --accent: #b5506a; --accent-soft: #f2d5dc; --teal: #2f6f7e; --ok: #3f7d4e; --warn: #a2641c;
+  --display: "Fredoka", "Trebuchet MS", sans-serif; --body: "Nunito Sans", "Segoe UI", system-ui, sans-serif;
+  --stage: #efe7d8; --shadow: 0 1px 2px rgba(43,38,34,.08), 0 8px 24px rgba(43,38,34,.08);
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #1d1a17; --panel: #262220; --line: #3b352f; --fg: #f3ece0; --muted: #b3a797;
+  --accent: #e49ab0; --accent-soft: #4a2f38; --teal: #7fc0cf; --ok: #8fcf9c; --warn: #e5b26b;
+  --stage: #2c2723; --shadow: 0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.35); color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #1d1a17; --panel: #262220; --line: #3b352f; --fg: #f3ece0; --muted: #b3a797;
+  --accent: #e49ab0; --accent-soft: #4a2f38; --teal: #7fc0cf; --ok: #8fcf9c; --warn: #e5b26b;
+  --stage: #2c2723; --shadow: 0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.35); color-scheme: dark }
+* { box-sizing: border-box }
+body { background: var(--bg); color: var(--fg); font-family: var(--body); font-size: 15px; line-height: 1.45;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 14px 40px }
+h1, h2, h3 { font-family: var(--display); font-weight: 600; margin: 0; text-wrap: balance; line-height: 1.15 }
+h1 { font-size: 26px } h2 { font-size: 18px } h3 { font-size: 16px }
+p { margin: 0 }
+.wrap { max-width: 1240px; margin: 0 auto; display: grid; gap: 14px }
+header { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 8px 16px }
+header .sub { color: var(--muted) }
+.eyebrow { font-size: 11.5px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); font-weight: 700 }
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px }
+.brief { display: grid; grid-template-columns: 1.4fr 1fr auto; gap: 10px 12px; align-items: end }
+.field { display: grid; gap: 4px; min-width: 0 }
+label { font-size: 12.5px; font-weight: 700; color: var(--muted) }
+input[type=text], textarea { font: inherit; color: var(--fg); background: var(--bg); border: 1px solid var(--line); border-radius: 9px; padding: 9px 11px; width: 100%; min-width: 0 }
+input[type=text]:focus, textarea:focus, button:focus-visible { outline: 2px solid var(--teal); outline-offset: 1px }
+textarea { resize: vertical; min-height: 56px }
+button { font: inherit; font-weight: 700; border-radius: 9px; border: 1px solid var(--line); background: var(--panel); color: var(--fg); padding: 9px 14px; cursor: pointer }
+button.primary { background: var(--accent); border-color: var(--accent); color: #fff }
+:root[data-theme="dark"] button.primary, :root:not([data-theme="light"]) button.primary { color: #1d1a17 }
+@media (prefers-color-scheme: light) { :root:not([data-theme="dark"]) button.primary { color: #fff } }
+:root[data-theme="light"] button.primary { color: #fff }
+button:disabled { opacity: .55; cursor: default }
+button.ghost { background: transparent }
+button.small { padding: 5px 10px; font-size: 13px }
+.actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center }
+.status { font-size: 13px; color: var(--muted); min-height: 1.3em }
+.status.err { color: var(--warn) }
+.stage { position: relative; background: var(--stage); border-radius: 16px; overflow: hidden; border: 1px solid var(--line) }
+.stage canvas { display: block; width: 100%; height: auto }
+.chips { position: absolute; inset: 0; pointer-events: none }
+.chip { position: absolute; transform: translate(-50%, 0); background: var(--panel); border: 1px solid var(--line); color: var(--fg);
+  border-radius: 999px; padding: 3px 11px; font-family: var(--display); font-size: 14px; pointer-events: auto; cursor: pointer; box-shadow: var(--shadow); white-space: nowrap }
+.chip.sel { background: var(--accent); border-color: var(--accent); color: #fff }
+.caption { position: absolute; left: 0; right: 0; top: 10px; text-align: center; font-family: var(--display); font-size: clamp(16px, 2.4vw, 24px); pointer-events: none; padding: 0 12px }
+.caption span { opacity: .4; transition: opacity .12s } .caption span.on { opacity: 1 }
+.caption .said { background: var(--panel); padding: 4px 14px; border-radius: 999px; display: inline-block; border: 1px solid var(--line) }
+.transport { display: flex; gap: 10px; align-items: center; flex-wrap: wrap }
+.transport input[type=range] { flex: 1; min-width: 140px; accent-color: var(--accent) }
+.time { font-variant-numeric: tabular-nums; color: var(--muted); font-size: 13px; min-width: 7ch }
+.options { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px }
+.card { display: grid; gap: 8px; border: 2px solid var(--line); border-radius: 14px; padding: 12px 14px; background: var(--panel); cursor: pointer; min-width: 0; align-content: start }
+.card.sel { border-color: var(--accent) }
+.card .name { display: flex; justify-content: space-between; gap: 8px; align-items: baseline }
+.card .letter { font-family: var(--display); font-size: 13px; color: var(--muted) }
+.card .read { color: var(--muted); font-size: 14px }
+.tags { display: flex; gap: 6px; flex-wrap: wrap }
+.tag { font-size: 12px; padding: 2px 8px; border-radius: 999px; background: var(--accent-soft); color: var(--fg) }
+.warn { font-size: 12.5px; color: var(--warn) }
+.pick { display: grid; gap: 8px; border-top: 1px solid var(--line); padding-top: 10px }
+.two { display: grid; grid-template-columns: 1.2fr 1fr; gap: 14px; align-items: start }
+.bible-list { display: grid; gap: 8px; max-height: 420px; overflow: auto }
+.note { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: start; padding: 8px 10px; border: 1px solid var(--line); border-radius: 10px; font-size: 14px }
+.note .k { font-size: 11.5px; color: var(--muted); letter-spacing: .08em; text-transform: uppercase; font-weight: 700 }
+.empty { color: var(--muted); font-size: 14px; padding: 8px 2px }
+.hist { display: grid; gap: 6px; font-size: 14px }
+.hist div { display: flex; justify-content: space-between; gap: 10px; border-bottom: 1px dashed var(--line); padding: 4px 0 }
+.hist b { font-weight: 600 }
+details summary { cursor: pointer; font-weight: 700; color: var(--muted); font-size: 13px }
+.banner { font-size: 13.5px; padding: 8px 12px; border-radius: 10px; background: var(--accent-soft); display: none }
+.banner.show { display: block }
+@media (max-width: 860px) { .brief { grid-template-columns: 1fr } .options { grid-template-columns: 1fr } .two { grid-template-columns: 1fr } }
+@media (prefers-reduced-motion: reduce) { .caption span { transition: none } }
+</style>
+
+<div class="wrap">
+  <header>
+    <div><h1>Jolly-bot Character Studio</h1><p class="sub">Type a line, get three ways the bean could say it with its body, keep the one that feels like <i>him</i>.</p></div>
+    <p class="status" id="capStatus"></p>
+  </header>
+
+  <div class="banner" id="banner"></div>
+
+  <section class="panel">
+    <div class="brief">
+      <div class="field"><label for="line">Line the robot says</label><input type="text" id="line" value="How was your day?" maxlength="160"></div>
+      <div class="field"><label for="situation">Situation (optional)</label><input type="text" id="situation" placeholder="e.g. you just walked in after work" maxlength="200"></div>
+      <div class="actions">
+        <button class="primary" id="design">Design 3 behaviors</button>
+        <button id="stop" hidden>Stop</button>
+      </div>
+    </div>
+    <p class="status" id="genStatus"></p>
+  </section>
+
+  <section class="stage" id="stage">
+    <canvas id="c"></canvas>
+    <div class="chips" id="chips"></div>
+    <div class="caption"><span class="said" id="caption"></span></div>
+  </section>
+
+  <section class="panel transport">
+    <button class="small" id="play">Pause</button>
+    <input type="range" id="scrub" min="0" max="3" step="0.01" value="0" aria-label="Time">
+    <span class="time" id="time">0.00 s</span>
+    <label style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="loop" checked> loop</label>
+    <label style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="idle" checked> idle breathing</label>
+    <label style="display:flex;gap:6px;align-items:center">speed <select id="speed"><option>0.5</option><option selected>1</option></select></label>
+  </section>
+
+  <section class="options" id="options"></section>
+
+  <section class="two">
+    <div class="panel" style="display:grid;gap:10px">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px"><h2>Character bible</h2><span class="eyebrow" id="bibleCount"></span></div>
+      <p class="sub" style="color:var(--muted);font-size:14px">Everything here is sent with the next brief. Picks add themselves; add your own rules too.</p>
+      <div class="actions"><input type="text" id="noteText" placeholder="e.g. He is shy: big feelings, small movements" maxlength="240" style="flex:1"><button class="small" id="addNote">Add rule</button></div>
+      <div class="bible-list" id="bible"><p class="empty">No rules yet. Pick a behaviour below or add a rule.</p></div>
+    </div>
+    <div class="panel" style="display:grid;gap:10px">
+      <h2>Rounds</h2>
+      <div class="hist" id="hist"><p class="empty">Your picks will be listed here.</p></div>
+      <details><summary>What the robot can physically do</summary>
+        <p style="font-size:13.5px;color:var(--muted);margin-top:6px">Six channels, straight from the build: yaw ±180° (whole body turns, at most ~170°/s), pitch −25° up to +15° down, roll ±18°, bob ±6 mm, two arm flaps 0–90°. Combined tilt ≤ 28°; big tilts give up bob. Cheeks glow, catchlights blink. No eyelids, no mouth movement. Everything the studio generates is clamped to these.</p>
+      </details>
+    </div>
+  </section>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.160.0/three.min.js"></script>
+<script>
+(() => {
+'use strict';
+// ------------------------------------------------------------------ physical limits (from the CAD + torque check)
+const LIM = { yaw: [-180, 180], pitch: [-25, 15], roll: [-18, 18], heave: [-6, 6], armL: [0, 90], armR: [0, 90], cheek: [0, 1] };
+const VMAX = { yaw: 170, pitch: 200, roll: 200, heave: 100, armL: 225, armR: 225 };   // deg/s or mm/s
+const CH = ['yaw', 'pitch', 'roll', 'heave', 'armL', 'armR', 'cheek'];
+const PIVOT_H = 72.5;
+
+function skinR(h) {
+  if (h <= 60) return Math.sqrt(Math.max(0, 80 * 80 - Math.pow((60 - h) * 80 / 152.6, 2)));
+  if (h <= 82) return 80;
+  const t = (h - 82) / 116; return 80 * Math.sqrt(Math.max(0, 1 - Math.pow(t, 2.6)));
+}
+
+// ------------------------------------------------------------------ clip helpers
+const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
+function ease(kind, s) {
+  if (kind === 'linear') return s;
+  if (kind === 'snap') return s < 0.5 ? 0 : 1;
+  if (kind === 'out') return 1 - Math.pow(1 - s, 3);
+  if (kind === 'in') return s * s * s;
+  return s * s * (3 - 2 * s);                         // inout (smoothstep)
+}
+function sampleClip(clip, t) {
+  const keys = clip.keys; const out = {};
+  for (const ch of CH) {
+    let a = keys[0], b = keys[keys.length - 1];
+    for (let i = 0; i < keys.length - 1; i++) if (t >= keys[i].t && t <= keys[i + 1].t) { a = keys[i]; b = keys[i + 1]; break; }
+    const va = a[ch] ?? 0, vb = b[ch] ?? 0;
+    const span = Math.max(1e-6, b.t - a.t);
+    const s = t <= a.t ? 0 : t >= b.t ? 1 : (t - a.t) / span;
+    out[ch] = va + (vb - va) * ease(b.ease || 'inout', s);
+  }
+  return out;
+}
+function normalizeClip(raw, idx) {
+  const warnings = [];
+  const clip = { name: String(raw.name || 'Option ' + 'ABC'[idx]).slice(0, 40), read: String(raw.read || '').slice(0, 160),
+    tags: Array.isArray(raw.tags) ? raw.tags.slice(0, 4).map(x => String(x).slice(0, 18)) : [],
+    sound: String(raw.sound || '').slice(0, 80), keys: [], speech: { words: [] }, blinks: [] };
+  let keys = Array.isArray(raw.keys) ? raw.keys.filter(k => k && typeof k.t === 'number') : [];
+  if (!keys.length) keys = [{ t: 0 }, { t: 1.5 }];
+  keys.sort((a, b) => a.t - b.t);
+  let last = null;
+  for (const k of keys) {
+    const nk = { t: clamp(k.t, 0, 8), ease: ['inout', 'linear', 'snap', 'in', 'out'].includes(k.ease) ? k.ease : 'inout' };
+    for (const ch of CH) {
+      let v = Number(k[ch] ?? (last ? last[ch] : 0)); if (!isFinite(v)) v = 0;
+      const c = clamp(v, LIM[ch][0], LIM[ch][1]);
+      if (Math.abs(c - v) > 0.5) warnings.push(`${ch} clamped at ${nk.t.toFixed(2)} s`);
+      nk[ch] = c;
+    }
+    // combined tilt cap and heave trade-off (per-rod clamp in the real engine)
+    const comb = Math.acos(Math.cos(nk.pitch * Math.PI / 180) * Math.cos(nk.roll * Math.PI / 180)) * 180 / Math.PI;
+    if (comb > 28) { const f = 28 / comb; nk.pitch *= f; nk.roll *= f; warnings.push(`tilt reduced to 28° at ${nk.t.toFixed(2)} s`); }
+    if (comb > 19) nk.heave *= Math.max(0, 1 - (comb - 19) / 9);
+    if (last) {
+      const dt = Math.max(0.02, nk.t - last.t);
+      for (const ch of Object.keys(VMAX)) {
+        const rate = Math.abs(nk[ch] - last[ch]) / dt;
+        if (rate > VMAX[ch]) { warnings.push(`${ch} too fast at ${nk.t.toFixed(2)} s (${Math.round(rate)}), eased`); nk.t = last.t + Math.abs(nk[ch] - last[ch]) / VMAX[ch]; }
+      }
+    }
+    clip.keys.push(nk); last = nk;
+  }
+  if (clip.keys[0].t > 0) clip.keys.unshift({ ...clip.keys[0], t: 0 });
+  clip.duration = clamp(Number(raw.duration) || clip.keys[clip.keys.length - 1].t + 0.3, 0.8, 8);
+  if (clip.keys[clip.keys.length - 1].t < clip.duration) clip.keys.push({ ...clip.keys[clip.keys.length - 1], t: clip.duration });
+  const words = raw.speech && Array.isArray(raw.speech.words) ? raw.speech.words : [];
+  clip.speech.words = words.filter(w => w && typeof w.t === 'number').map(w => ({ w: String(w.w || '').slice(0, 24), t: clamp(w.t, 0, clip.duration) }));
+  clip.blinks = Array.isArray(raw.blinks) ? raw.blinks.filter(x => typeof x === 'number').map(x => clamp(x, 0, clip.duration)).slice(0, 6) : [];
+  clip.warnings = [...new Set(warnings)].slice(0, 4);
+  return clip;
+}
+function wordsFor(line, start, perWord) {
+  return line.trim().split(/\s+/).filter(Boolean).map((w, i) => ({ w, t: +(start + i * perWord).toFixed(2) }));
+}
+
+// ------------------------------------------------------------------ built-in motion library (used when Claude is unavailable, and for the opening example set)
+function offlineVariants(line) {
+  const n = Math.max(1, line.trim().split(/\s+/).length); const per = 0.22; const sp = 0.45; const end = sp + n * per + 0.6;
+  const A = { name: 'Soft lean-in', read: 'Gentle and attentive. He settles toward you and warms up while he asks.', tags: ['warm', 'quiet'], sound: 'rising two-note chirp',
+    duration: end + 0.4, keys: [
+      { t: 0, pitch: 0, roll: 0, heave: 0, armL: 0, armR: 0, cheek: 0.2 },
+      { t: 0.35, pitch: -3, heave: 2, cheek: 0.3, ease: 'out' },
+      { t: sp + 0.2, pitch: 6, roll: 7, heave: -1, cheek: 0.6 },
+      { t: end - 0.3, pitch: 8, roll: 9, cheek: 0.9 },
+      { t: end + 0.4, pitch: 2, roll: 3, cheek: 0.6 }],
+    speech: { words: wordsFor(line, sp, per) }, blinks: [end - 0.1] };
+  const B = { name: 'Bright hop', read: 'Perky. A little bounce to get your attention, arms up on the question.', tags: ['playful', 'energetic'], sound: 'bubbly trill',
+    duration: end + 0.5, keys: [
+      { t: 0, pitch: 0, roll: 0, heave: 0, armL: 0, armR: 0, cheek: 0.3 },
+      { t: 0.18, pitch: 4, heave: -5, ease: 'in' },
+      { t: 0.34, pitch: -8, heave: 6, armL: 30, armR: 30, cheek: 0.7, ease: 'out' },
+      { t: 0.6, pitch: -2, heave: 0, armL: 15, armR: 15 },
+      { t: sp + n * per, pitch: -6, roll: -6, armL: 55, armR: 55, cheek: 1 },
+      { t: end + 0.5, pitch: 0, roll: 0, armL: 0, armR: 0, cheek: 0.6 }],
+    speech: { words: wordsFor(line, sp, per) }, blinks: [0.9] };
+  const C = { name: 'Curious tilt', read: 'Thoughtful. Turns slightly to find you, cocks his head and holds it, like he really wants the answer.', tags: ['curious', 'slow'], sound: 'soft questioning glissando',
+    duration: end + 0.8, keys: [
+      { t: 0, yaw: 0, pitch: 0, roll: 0, heave: 0, armL: 0, armR: 0, cheek: 0.2 },
+      { t: 0.4, yaw: 14, pitch: -5, cheek: 0.3, ease: 'out' },
+      { t: sp + 0.3, yaw: 10, pitch: -10, roll: -14, heave: 2, cheek: 0.5 },
+      { t: end, yaw: 8, pitch: -12, roll: -17, cheek: 0.8 },
+      { t: end + 0.8, yaw: 4, pitch: -6, roll: -8, cheek: 0.6 }],
+    speech: { words: wordsFor(line, sp, per) }, blinks: [sp + 0.1, end + 0.5] };
+  return [A, B, C].map(normalizeClip);
+}
+
+// ------------------------------------------------------------------ three.js stage
+const canvas = document.getElementById('c');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(28, 2, 0.1, 50);
+scene.add(new THREE.HemisphereLight(0xfffaf0, 0x9a8f84, 1.35));
+const sun = new THREE.DirectionalLight(0xffffff, 1.9); sun.position.set(2.5, 5, 3.5); scene.add(sun);
+const fill = new THREE.DirectionalLight(0xdde8ff, 0.45); fill.position.set(-3, 2, -2); scene.add(fill);
+
+function gradientTex(inner, outer) {
+  const c = document.createElement('canvas'); c.width = c.height = 128; const g = c.getContext('2d');
+  const r = g.createRadialGradient(64, 64, 4, 64, 64, 62); r.addColorStop(0, inner); r.addColorStop(1, outer);
+  g.fillStyle = r; g.fillRect(0, 0, 128, 128); const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t;
+}
+const cheekTex = gradientTex('rgba(233,150,165,0.95)', 'rgba(233,150,165,0)');
+const shadowTex = gradientTex('rgba(30,25,20,0.45)', 'rgba(30,25,20,0)');
+const furMat = new THREE.MeshPhysicalMaterial({ color: 0xf8f0e2, roughness: 0.92, metalness: 0, sheen: 1, sheenRoughness: 0.55, sheenColor: new THREE.Color(0xfff6ea) });
+const furMat2 = furMat.clone(); furMat2.color.set(0xf2e8d6);
+const inkMat = new THREE.MeshStandardMaterial({ color: 0x15110f, roughness: 0.35 });
+const glossMat = new THREE.MeshPhysicalMaterial({ color: 0x0a0a0a, roughness: 0.15, clearcoat: 1 });
+const whiteMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+
+function lathe(points, mat) { return new THREE.Mesh(new THREE.LatheGeometry(points, 56), mat); }
+function buildRobot() {
+  const root = new THREE.Group();                                           // yaw
+  // static-ish lower body (sleeve), h 12..82
+  const lowPts = [new THREE.Vector2(0, 0.12)];
+  for (let h = 14; h <= 82; h += 2) lowPts.push(new THREE.Vector2(skinR(h) / 100, h / 100));
+  lowPts.push(new THREE.Vector2(skinR(82) / 100 - 0.02, 0.84), new THREE.Vector2(0, 0.84));
+  const lower = lathe(lowPts, furMat2); root.add(lower);
+  for (const sx of [-1, 1]) { const f = new THREE.Mesh(new THREE.SphereGeometry(1, 20, 14), furMat2); f.scale.set(0.14, 0.07, 0.10); f.position.set(sx * 0.28, 0.14, 0.62); root.add(f); }
+  // pivot (pitch, roll, heave) carrying head + skirt
+  const pivot = new THREE.Group(); pivot.position.y = PIVOT_H / 100; pivot.rotation.order = 'XZY'; root.add(pivot);
+  const upPts = [new THREE.Vector2(0, (40 - PIVOT_H) / 100)];
+  for (let h = 40; h <= 198; h += 2) { const r = h < 95 ? skinR(h) + 3 : skinR(h); upPts.push(new THREE.Vector2(r / 100, (h - PIVOT_H) / 100)); }
+  upPts.push(new THREE.Vector2(0, (198 - PIVOT_H) / 100));
+  const head = lathe(upPts, furMat); pivot.add(head);
+  const eyes = []; const lights = [];
+  for (const sx of [-1, 1]) {
+    const z = skinR(123) / 100 - 0.012; const eye = new THREE.Mesh(new THREE.SphereGeometry(0.056, 24, 16), glossMat);
+    eye.position.set(sx * 0.25, (123 - PIVOT_H) / 100, Math.sqrt(Math.max(0, z * z - 0.0625))); pivot.add(eye); eyes.push(eye);
+    const hl = new THREE.Mesh(new THREE.SphereGeometry(0.016, 10, 8), whiteMat); hl.position.set(-0.018, 0.02, 0.047); eye.add(hl); lights.push(hl);
+  }
+  const cheeks = [];
+  for (const sx of [-1, 1]) {
+    const m = new THREE.Mesh(new THREE.CircleGeometry(0.16, 32), new THREE.MeshBasicMaterial({ map: cheekTex, transparent: true, depthWrite: false, opacity: 0.5 }));
+    const h = 115, r = skinR(h) / 100 + 0.01, x = sx * 0.37; m.position.set(x, (h - PIVOT_H) / 100, Math.sqrt(Math.max(0.01, r * r - x * x)));
+    m.lookAt(new THREE.Vector3(x * 2.2, (h - PIVOT_H) / 100, m.position.z * 2.2)); pivot.add(m); cheeks.push(m);
+  }
+  const zs = skinR(98) / 100 + 0.005;
+  const curve = new THREE.QuadraticBezierCurve3(new THREE.Vector3(-0.1, (98 - PIVOT_H) / 100 + 0.02, zs - 0.006), new THREE.Vector3(0, (98 - PIVOT_H) / 100 - 0.04, zs + 0.012), new THREE.Vector3(0.1, (98 - PIVOT_H) / 100 + 0.02, zs - 0.006));
+  pivot.add(new THREE.Mesh(new THREE.TubeGeometry(curve, 16, 0.011, 8, false), inkMat));
+  const arms = [];
+  for (const sx of [-1, 1]) {
+    const az = sx * 70 * Math.PI / 180; const r = skinR(110) / 100 - 0.02;
+    const azg = new THREE.Group(); azg.position.set(r * Math.sin(az), (110 - PIVOT_H) / 100, r * Math.cos(az)); azg.rotation.y = az; pivot.add(azg);
+    const flap = new THREE.Group(); azg.add(flap);
+    const arm = new THREE.Mesh(new THREE.SphereGeometry(1, 20, 14), furMat); arm.scale.set(0.125, 0.125, 0.2); arm.position.set(0, 0, 0.2); flap.add(arm);
+    arms.push(flap);
+  }
+  const ring = new THREE.Mesh(new THREE.RingGeometry(0.72, 0.8, 48), new THREE.MeshBasicMaterial({ color: 0xb5506a, transparent: true, opacity: 0, side: THREE.DoubleSide }));
+  ring.rotation.x = -Math.PI / 2; ring.position.y = 0.012;
+  const disc = new THREE.Mesh(new THREE.CylinderGeometry(0.62, 0.62, 0.12, 48), new THREE.MeshStandardMaterial({ color: 0x3a332e, roughness: 0.8 })); disc.position.y = 0.06;
+  const shadow = new THREE.Mesh(new THREE.PlaneGeometry(2.2, 2.2), new THREE.MeshBasicMaterial({ map: shadowTex, transparent: true, depthWrite: false })); shadow.rotation.x = -Math.PI / 2; shadow.position.y = 0.004;
+  const all = new THREE.Group(); all.add(shadow, disc, ring, root);
+  return { all, root, pivot, cheeks, lights, arms, ring };
+}
+const robots = [0, 1, 2].map(i => { const r = buildRobot(); scene.add(r.all); return r; });
+const chipsEl = document.getElementById('chips');
+const chips = [0, 1, 2].map(i => { const d = document.createElement('div'); d.className = 'chip'; d.textContent = 'ABC'[i]; d.onclick = () => select(i); chipsEl.appendChild(d); return d; });
+
+let narrow = false;
+function layout() {
+  const w = canvas.clientWidth || 900; narrow = w < 640;
+  const hgt = Math.round(w * (narrow ? 0.95 : 0.46));
+  renderer.setSize(w, hgt, false); camera.aspect = w / hgt; camera.updateProjectionMatrix();
+  if (narrow) { camera.position.set(0, 1.35, 5.4); camera.lookAt(0, 0.95, 0); }
+  else { camera.position.set(0, 1.45, 6.3); camera.lookAt(0, 0.95, 0); }
+  robots.forEach((r, i) => { r.all.visible = narrow ? i === selected : true; r.all.position.x = narrow ? 0 : (i - 1) * 2.35; });
+}
+new ResizeObserver(layout).observe(canvas);
+
+// ------------------------------------------------------------------ playback
+let variants = offlineVariants(document.getElementById('line').value); let exampleSet = true;
+let selected = 0, tPlay = 0, playing = !matchMedia('(prefers-reduced-motion: reduce)').matches, lastTs = 0;
+const scrub = document.getElementById('scrub'), timeEl = document.getElementById('time'), playBtn = document.getElementById('play');
+playBtn.textContent = playing ? 'Pause' : 'Play';
+function maxDur() { return Math.max(...variants.map(v => v.duration)); }
+function applyPose(r, p, idleAmt, time, clip) {
+  r.root.rotation.y = p.yaw * Math.PI / 180;
+  let pitch = p.pitch, heave = p.heave;
+  if (idleAmt) { pitch += 1.5 * Math.sin(time * 2 * Math.PI * 0.28) * idleAmt; heave += 2 * Math.sin(time * 2 * Math.PI * 0.28 + 0.6) * idleAmt; }
+  for (const w of clip.speech.words) { const d = time - w.t; if (d >= 0 && d < 0.16) { const k = Math.sin(d / 0.16 * Math.PI); heave += 1.6 * k; pitch += 1.2 * k; } }
+  r.pivot.rotation.x = pitch * Math.PI / 180; r.pivot.rotation.z = -p.roll * Math.PI / 180;
+  r.pivot.position.y = PIVOT_H / 100 + heave / 100;
+  r.arms[0].rotation.x = -(15 + p.armL) * Math.PI / 180; r.arms[1].rotation.x = -(15 + p.armR) * Math.PI / 180;
+  for (const c of r.cheeks) c.material.opacity = 0.35 + 0.6 * clamp(p.cheek, 0, 1);
+  let blink = false; for (const b of clip.blinks) if (time >= b && time < b + 0.13) blink = true;
+  for (const l of r.lights) l.visible = !blink;
+}
+function frame(ts) {
+  requestAnimationFrame(frame);
+  const dt = Math.min(0.05, (ts - lastTs) / 1000 || 0); lastTs = ts;
+  if (playing) { tPlay += dt * parseFloat(document.getElementById('speed').value); if (tPlay > maxDur()) { if (document.getElementById('loop').checked) tPlay = 0; else { tPlay = maxDur(); playing = false; playBtn.textContent = 'Play'; } } scrub.value = tPlay; }
+  timeEl.textContent = tPlay.toFixed(2) + ' s';
+  const idleOn = document.getElementById('idle').checked ? 1 : 0;
+  robots.forEach((r, i) => { const clip = variants[i]; if (!clip) return; applyPose(r, sampleClip(clip, Math.min(tPlay, clip.duration)), idleOn, tPlay, clip); r.ring.material.opacity = i === selected ? 0.9 : 0; });
+  renderer.render(scene, camera);
+  // chips under each robot
+  const rect = canvas.getBoundingClientRect(); const v = new THREE.Vector3();
+  robots.forEach((r, i) => { const c = chips[i]; if (!r.all.visible) { c.style.display = 'none'; return; } c.style.display = '';
+    v.set(r.all.position.x, 0, 0.75).project(camera); c.style.left = ((v.x + 1) / 2 * rect.width) + 'px'; c.style.top = ((1 - v.y) / 2 * rect.height + 6) + 'px'; c.classList.toggle('sel', i === selected); });
+  // caption
+  const clip = variants[selected]; const cap = document.getElementById('caption');
+  if (clip && cap.dataset.key !== clip.name + clip.speech.words.map(w => w.w).join(' ')) { cap.dataset.key = clip.name + clip.speech.words.map(w => w.w).join(' '); cap.innerHTML = clip.speech.words.map(w => `<span>${esc(w.w)}</span>`).join(' '); }
+  if (clip) { const spans = cap.children; clip.speech.words.forEach((w, i) => spans[i] && spans[i].classList.toggle('on', tPlay >= w.t && tPlay < clip.duration)); }
+}
+requestAnimationFrame(frame);
+playBtn.onclick = () => { playing = !playing; if (playing && tPlay >= maxDur()) tPlay = 0; playBtn.textContent = playing ? 'Pause' : 'Play'; };
+scrub.oninput = () => { tPlay = parseFloat(scrub.value); playing = false; playBtn.textContent = 'Play'; };
+canvas.addEventListener('click', e => {
+  const rect = canvas.getBoundingClientRect(); const m = new THREE.Vector2(((e.clientX - rect.left) / rect.width) * 2 - 1, -((e.clientY - rect.top) / rect.height) * 2 + 1);
+  const rc = new THREE.Raycaster(); rc.setFromCamera(m, camera);
+  for (let i = 0; i < 3; i++) if (robots[i].all.visible && rc.intersectObject(robots[i].root, true).length) { select(i); return; }
+});
+function esc(s) { return String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
+
+// ------------------------------------------------------------------ option cards
+const optionsEl = document.getElementById('options');
+function select(i) { selected = i; renderCards(); if (narrow) layout(); }
+function renderCards() {
+  optionsEl.innerHTML = '';
+  variants.forEach((v, i) => {
+    const card = document.createElement('div'); card.className = 'card' + (i === selected ? ' sel' : ''); card.tabIndex = 0; card.setAttribute('role', 'button');
+    card.innerHTML = `<div class="name"><h3>${esc(v.name)}</h3><span class="letter">${'ABC'[i]} · ${v.duration.toFixed(1)} s</span></div>
+      <p class="read">${esc(v.read)}</p>
+      <div class="tags">${v.tags.map(t => `<span class="tag">${esc(t)}</span>`).join('')}${v.sound ? `<span class="tag">♪ ${esc(v.sound)}</span>` : ''}</div>
+      ${v.warnings && v.warnings.length ? `<p class="warn">Adjusted to the hardware: ${esc(v.warnings.join('; '))}</p>` : ''}`;
+    if (i === selected) {
+      const pick = document.createElement('div'); pick.className = 'pick';
+      pick.innerHTML = `<label for="notes">Why this one? (optional, goes into the bible)</label><textarea id="notes" placeholder="e.g. keep the head-cock but less arm"></textarea>
+        <div class="actions"><button class="primary small" id="savePick">Keep this behaviour</button><button class="small" id="export">Download clip JSON</button><span class="status" id="pickStatus"></span></div>`;
+      card.appendChild(pick);
+      pick.addEventListener('click', e => e.stopPropagation());
+      pick.querySelector('#savePick').onclick = savePick; pick.querySelector('#export').onclick = exportClip;
+    }
+    card.onclick = () => select(i); card.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); select(i); } };
+    optionsEl.appendChild(card);
+  });
+  scrub.max = maxDur();
+}
+renderCards();
+
+// ------------------------------------------------------------------ capabilities: sample (Claude), db (bible + rounds), downloads
+let sampleFn = null, db = null, downloads = null, bible = [], rounds = [];
+const capStatus = document.getElementById('capStatus'), banner = document.getElementById('banner'), genStatus = document.getElementById('genStatus');
+function setBanner(t) { banner.textContent = t; banner.classList.toggle('show', !!t); }
+(async () => {
+  if (!window.claude || typeof window.claude.use !== 'function') { setBanner('Opened outside the Claude viewer: using the built-in motion library, picks stay in this tab.'); return; }
+  const [s, d, dl] = await Promise.all([claude.use('sample'), claude.use('db'), claude.use('downloads')]);
+  sampleFn = s; db = d; downloads = dl;
+  const parts = [];
+  parts.push(s ? 'Claude designs the moves' : 'built-in motion library only');
+  parts.push(d ? 'bible saved' : 'bible kept in this tab');
+  capStatus.textContent = parts.join(' · ');
+  if (!s) setBanner('Claude generation is not available in this view, so the Design button composes from the built-in motion library.');
+  if (d) {
+    d.collection('bible').orderBy('createdAt', 'desc').limit(60).onSnapshot(snap => { bible = snap.docs.map(x => ({ id: x.id, ...x.data() })); renderBible(); }, () => {});
+    d.collection('rounds').orderBy('createdAt', 'desc').limit(40).onSnapshot(snap => { rounds = snap.docs.map(x => ({ id: x.id, ...x.data() })); renderHist(); }, () => {});
+  }
+})();
+
+function renderBible() {
+  const el = document.getElementById('bible'); document.getElementById('bibleCount').textContent = bible.length ? bible.length + (bible.length === 1 ? ' entry' : ' entries') : '';
+  if (!bible.length) { el.innerHTML = '<p class="empty">No rules yet. Pick a behaviour below or add a rule.</p>'; return; }
+  el.innerHTML = '';
+  for (const b of bible) {
+    const d = document.createElement('div'); d.className = 'note';
+    d.innerHTML = `<div><div class="k">${b.kind === 'pick' ? 'from a pick' : 'rule'}</div><div>${esc(b.text)}</div></div><button class="ghost small" aria-label="Remove">✕</button>`;
+    d.querySelector('button').onclick = async () => { if (db) { try { await db.collection('bible').doc(b.id).delete(); } catch (e) {} } else { bible = bible.filter(x => x !== b); renderBible(); } };
+    el.appendChild(d);
+  }
+}
+function renderHist() {
+  const el = document.getElementById('hist');
+  if (!rounds.length) { el.innerHTML = '<p class="empty">Your picks will be listed here.</p>'; return; }
+  el.innerHTML = rounds.map(r => `<div><span>“${esc(r.line)}”</span><b>${esc(r.pickName || '')}</b></div>`).join('');
+}
+document.getElementById('addNote').onclick = async () => {
+  const inp = document.getElementById('noteText'); const text = inp.value.trim(); if (!text) return;
+  const entry = { text, kind: 'note', createdAt: Date.now() }; inp.value = '';
+  if (db) { try { await db.collection('bible').add(entry); } catch (e) { bible.unshift({ id: 'local' + Date.now(), ...entry }); renderBible(); } }
+  else { bible.unshift({ id: 'local' + Date.now(), ...entry }); renderBible(); }
+};
+async function savePick() {
+  const v = variants[selected]; const notes = (document.getElementById('notes') || {}).value || ''; const st = document.getElementById('pickStatus');
+  const line = document.getElementById('line').value.trim(), situation = document.getElementById('situation').value.trim();
+  const round = { line, situation, variants: variants.map(x => ({ name: x.name, read: x.read, tags: x.tags, duration: x.duration, sound: x.sound, keys: x.keys, speech: x.speech, blinks: x.blinks })), pick: selected, pickName: v.name, notes, example: exampleSet, createdAt: Date.now() };
+  const entry = { text: `For “${line}”${situation ? ' (' + situation + ')' : ''}: chose “${v.name}” — ${v.read}${notes ? ' Notes: ' + notes : ''}`, kind: 'pick', createdAt: Date.now() };
+  st.textContent = 'Saving…';
+  if (db) { try { const ref = await db.collection('rounds').add(round); entry.round = ref.id; await db.collection('bible').add(entry); st.textContent = 'Kept. It will shape the next round.'; }
+    catch (e) { st.textContent = e && e.code === 'quota_exceeded' ? 'Storage is full: remove old rounds first.' : 'Could not save; kept in this tab.'; bible.unshift({ id: 'local' + Date.now(), ...entry }); rounds.unshift(round); renderBible(); renderHist(); } }
+  else { bible.unshift({ id: 'local' + Date.now(), ...entry }); rounds.unshift(round); renderBible(); renderHist(); st.textContent = 'Kept in this tab.'; }
+}
+async function exportClip() {
+  const v = variants[selected]; const st = document.getElementById('pickStatus');
+  const data = JSON.stringify({ format: 'jollybot-clip-1', channels: { yaw: 'deg', pitch: 'deg (+ = nod toward viewer)', roll: 'deg', heave: 'mm', armL: 'deg', armR: 'deg', cheek: '0..1' }, line: document.getElementById('line').value, ...v }, null, 2);
+  if (!downloads) { st.textContent = 'Downloads are not available in this view.'; return; }
+  try { await downloads.save({ filename: 'jollybot-' + v.name.toLowerCase().replace(/[^a-z0-9]+/g, '-') + '.json', data }); st.textContent = 'Saved.'; }
+  catch (e) { st.textContent = e && e.code === 'declined' ? '' : 'Could not save the file.'; }
+}
+
+// ------------------------------------------------------------------ generation
+const designBtn = document.getElementById('design'), stopBtn = document.getElementById('stop'); let ctl = null;
+function bibleText() { return bible.slice(0, 24).map(b => '- ' + b.text).join('\n'); }
+function lastPickExample() {
+  const r = rounds.find(x => x.variants && typeof x.pick === 'number' && !x.example); if (!r) return '';
+  const v = r.variants[r.pick]; if (!v) return '';
+  return `\nA behaviour the designer already KEPT (match its taste, do not copy it):\n${JSON.stringify({ name: v.name, keys: v.keys.map(k => ({ t: k.t, yaw: k.yaw, pitch: k.pitch, roll: k.roll, heave: k.heave, armL: k.armL, armR: k.armR, cheek: k.cheek })) })}\n`;
+}
+function buildPrompt(line, situation) {
+  return `You are the animator for Jolly-bot, a small tabletop social robot: a cream fluffy bean, 20 cm tall, with beady black eyes, pink cheeks that glow, a tiny stitched smile, two stubby arms and no mouth movement. Expression comes entirely from body posture, like Keepon or Reachy Mini. He is shy, warm, and a little clumsy; big feelings shown with small, specific movements.
+
+The robot says this line (it plays as chirpy gibberish, so the body carries the meaning): "${line}"
+${situation ? 'Situation: ' + situation + '\n' : ''}
+Character bible (the designer's accumulated preferences; follow them):
+${bibleText() || '- (nothing yet)'}
+${lastPickExample()}
+Physical channels and HARD limits (the player clamps anything outside):
+- yaw: whole body turns, degrees, −180..180, at most 170 deg/s (a 30° glance takes ≥ 0.18 s)
+- pitch: head tilt, degrees, −25 (look up at a seated person) .. +15 (nod down toward the viewer), ≤ 200 deg/s
+- roll: head-cock, degrees, −18..18, ≤ 200 deg/s
+- heave: bob, millimetres, −6..6, ≤ 100 mm/s. Combined pitch+roll must stay ≤ 28°; bob shrinks at large tilts
+- armL, armR: flap up, degrees, 0 (rest) .. 90, ≤ 225 deg/s; 45 is a normal wave, 90 is a big celebrate
+- cheek: glow 0..1 (ramps ≥ 0.4 s look right)
+Also: blinks = catchlight dims at those times. Speech words get timestamps; the player adds a tiny bob on each word.
+
+Animation principles: anticipation before a big move (small opposite motion), ease-outs, hold poses for ≥ 0.4 s so they read, asymmetry (roll with a little pitch), finish with a settle rather than a snap back to zero, never freeze completely. Keep clips 1.5–4 s.
+
+Produce THREE clearly different behaviours for this line, each a different read of the character (for example: tentative vs. bright vs. curious; or different tempo). Reply with ONLY this JSON, no prose:
+{"variants":[{"name":"2-3 words","read":"one sentence on what it conveys","tags":["adj","adj"],"sound":"short description of the chirp","duration":2.6,
+ "keys":[{"t":0,"yaw":0,"pitch":0,"roll":0,"heave":0,"armL":0,"armR":0,"cheek":0.2},{"t":0.4,"pitch":-4,"heave":2,"ease":"out"},{"t":1.2,"pitch":6,"roll":8,"cheek":0.7}],
+ "speech":{"words":[{"w":"How","t":0.5},{"w":"was","t":0.72}]},"blinks":[1.9]}, ...two more...]}
+Rules for keys: 4–8 keys per clip, times ascending starting at 0, every channel optional (missing = unchanged), "ease" one of inout|out|in|linear|snap. Speech words must be the line's words in order with rising times inside the clip.`;
+}
+async function design() {
+  const line = document.getElementById('line').value.trim(); if (!line) { genStatus.textContent = 'Type a line first.'; return; }
+  const situation = document.getElementById('situation').value.trim();
+  if (!sampleFn) { variants = offlineVariants(line); exampleSet = false; selected = 0; tPlay = 0; renderCards(); genStatus.textContent = 'Composed from the built-in library (Claude is not available here).'; return; }
+  designBtn.disabled = true; stopBtn.hidden = false; genStatus.className = 'status'; genStatus.textContent = 'Thinking…';
+  ctl = new AbortController();
+  try {
+    const res = await sampleFn.json(buildPrompt(line, situation), { signal: ctl.signal, cache: false, onText: () => { genStatus.textContent = 'Writing the moves…'; } });
+    const list = res && Array.isArray(res.variants) ? res.variants.slice(0, 3) : [];
+    if (list.length < 2) throw { code: 'invalid_json', message: 'too few variants' };
+    while (list.length < 3) list.push(offlineVariants(line)[list.length]);
+    variants = list.map(normalizeClip); exampleSet = false; selected = 0; tPlay = 0; playing = true; playBtn.textContent = 'Pause'; renderCards();
+    genStatus.textContent = 'Three options ready. Click a robot or a card, then keep the one that feels right.';
+  } catch (e) {
+    const code = e && e.code;
+    if (code === 'cancelled') genStatus.textContent = 'Stopped.';
+    else if (code === 'not_granted' || code === 'sampling_disabled' || code === 'not_declared') { sampleFn = null; setBanner('Claude generation was not allowed for this page, so the Design button composes from the built-in motion library.'); genStatus.textContent = ''; }
+    else if (code === 'rate_limited') { genStatus.className = 'status err'; genStatus.textContent = 'Claude is busy or your usage limit is reached. Try again in a bit.'; }
+    else if (code === 'invalid_json' || code === 'empty_completion') { genStatus.className = 'status err'; genStatus.textContent = 'The answer did not come back as clips. Try again, or shorten the line.'; }
+    else if (code === 'refused') { genStatus.className = 'status err'; genStatus.textContent = 'Claude declined this line. Try a different one.'; }
+    else { genStatus.className = 'status err'; genStatus.textContent = 'Something went wrong talking to Claude. Try again.'; }
+  } finally { designBtn.disabled = false; stopBtn.hidden = true; ctl = null; }
+}
+designBtn.onclick = design; stopBtn.onclick = () => ctl && ctl.abort();
+document.getElementById('line').addEventListener('keydown', e => { if (e.key === 'Enter') design(); });
+})();
+</script>
