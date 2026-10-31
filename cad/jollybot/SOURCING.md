@@ -2,7 +2,7 @@
 
 Prices are what vendor pages showed on the research date; stock changes weekly. 'Alt' rows (qty 0) are fallbacks and are not in the total. Estimates are marked in the notes.
 
-**Primary path total ≈ $794** (6 Dynamixel servos, OpenRB-150, Pi Zero 2 W, Pololu rails, bearing/bushing/U-joint, fur, eyes, prototype plush, tools). Without tools and prototype plush ≈ $714.
+**Primary path total ≈ $818** (with the in-stock Seeed servos) (6 Dynamixel servos, OpenRB-150, Pi Zero 2 W, Pololu rails, bearing/bushing/U-joint, fur, eyes, prototype plush, tools). Without tools and prototype plush ≈ $738.
 
 ## What the research changed in the design
 
