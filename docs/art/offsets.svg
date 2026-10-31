@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 520" width="520" height="520" aria-label="Horizontal section through the head: fur skin, foam jacket, air gap and PETG shell, with the split line, face plate, eye wells and shoulder pockets">
+<defs>
+<filter id="fuzz" x="-10%" y="-10%" width="120%" height="120%"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="7" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="3.2" xChannelSelector="R" yChannelSelector="G"/></filter>
+<filter id="soft" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="2"/></filter>
+<radialGradient id="furG" cx="42%" cy="35%" r="70%"><stop offset="0" stop-color="#FBF6EC"/><stop offset="0.7" stop-color="#F1E7D4"/><stop offset="1" stop-color="#DCCDB3"/></radialGradient>
+<radialGradient id="cheekG"><stop offset="0" stop-color="#E9A3AE" stop-opacity="0.95"/><stop offset="1" stop-color="#E9A3AE" stop-opacity="0"/></radialGradient>
+<radialGradient id="cheekHot"><stop offset="0" stop-color="#F28AA0" stop-opacity="1"/><stop offset="1" stop-color="#F28AA0" stop-opacity="0"/></radialGradient>
+<radialGradient id="eyeG" cx="35%" cy="30%" r="70%"><stop offset="0" stop-color="#4A4A4A"/><stop offset="0.6" stop-color="#151515"/><stop offset="1" stop-color="#000"/></radialGradient>
+</defs>
+<circle cx="260" cy="260" r="260" fill="#F3EADA" stroke="#2B2622" stroke-width="1.5"/>
+<circle cx="260" cy="260" r="220" fill="#F7E7B8" stroke="#2B2622" stroke-width="1.5"/>
+<circle cx="260" cy="260" r="180" fill="#FBFBF8" stroke="#2B2622" stroke-width="1.5"/>
+<circle cx="260" cy="260" r="172" fill="#B9D6DE" stroke="#2B2622" stroke-width="1.5"/>
+<circle cx="260" cy="260" r="165.6" fill="#FBFBF8" stroke="none"/>
+<circle cx="260" cy="260" r="260" fill="none" stroke="#B9A98C" stroke-width="3" filter="url(#fuzz)"/>
+<circle cx="485.2" cy="130.0" r="3.5" fill="#3C7A89"/>
+<path d="M 485.2 130.0 L 470 130.0 L 512 130.0" fill="none" stroke="#3C7A89" stroke-width="1.5"/>
+<circle cx="450.5" cy="150.0" r="3.5" fill="#3C7A89"/>
+<path d="M 450.5 150.0 L 470 150.0 L 512 150.0" fill="none" stroke="#3C7A89" stroke-width="1.5"/>
+<circle cx="415.9" cy="170.0" r="3.5" fill="#3C7A89"/>
+<path d="M 415.9 170.0 L 470 170.0 L 512 170.0" fill="none" stroke="#3C7A89" stroke-width="1.5"/>
+<circle cx="409.0" cy="174.0" r="3.5" fill="#3C7A89"/>
+<path d="M 409.0 174.0 L 470 174.0 L 512 174.0" fill="none" stroke="#3C7A89" stroke-width="1.5"/>
+<line x1="260" y1="88" x2="260" y2="432" stroke="#C8553D" stroke-width="2" stroke-dasharray="8 6"/>
+<rect x="100" y="404" width="320" height="16" rx="2" fill="#B9D6DE" stroke="#2B2622" stroke-width="1.5"/>
+<circle cx="160" cy="412" r="32" fill="#FBFBF8" stroke="#2B2622" stroke-width="1.2"/>
+<circle cx="360" cy="412" r="32" fill="#FBFBF8" stroke="#2B2622" stroke-width="1.2"/>
+<rect x="69.64918067425467" y="288.72322293210703" width="80" height="52" rx="4" fill="#2F3A44" stroke="none" transform="rotate(70 109.6 314.7)" opacity="0.9"/>
+<rect x="370.35081932574536" y="288.723222932107" width="80" height="52" rx="4" fill="#2F3A44" stroke="none" transform="rotate(-70 410.4 314.7)" opacity="0.9"/>
+<path d="M 248 540 L 272 540 L 260 556 Z" fill="#2B2622"/>
+</svg>
