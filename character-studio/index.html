@@ -376,10 +376,10 @@ Also: blinks = soft light dips at those times. Speech words get timestamps; the 
     const headMat = shellMat.clone(); headMat.side = THREE.DoubleSide;
     const head = lathe(headPts, headMat); head.position.y = 0.0; head.rotation.x = 0.62; neck.add(head);   // tipped toward the viewer so the face shows
     const faceMat = new THREE.MeshStandardMaterial({ color: 0xece6dc, roughness: 0.7 });
-    const face = new THREE.Mesh(new THREE.CircleGeometry(0.55, 48), faceMat); face.position.y = 1.0; face.rotation.x = -Math.PI / 2; head.add(face);
+    const face = new THREE.Mesh(new THREE.CircleGeometry(0.55, 48), faceMat); face.position.y = 1.103; face.rotation.x = -Math.PI / 2; head.add(face);
     const ringMat = new THREE.MeshBasicMaterial({ color: 0xfff1cf });
-    const ringMesh = new THREE.Mesh(new THREE.TorusGeometry(0.3, 0.028, 12, 64), ringMat); ringMesh.position.y = 1.02; ringMesh.rotation.x = -Math.PI / 2; head.add(ringMesh);
-    const glow = new THREE.Mesh(new THREE.PlaneGeometry(1.4, 1.4), new THREE.MeshBasicMaterial({ map: glowTex, transparent: true, depthWrite: false })); glow.position.y = 1.06; glow.rotation.x = -Math.PI / 2; head.add(glow);
+    const ringMesh = new THREE.Mesh(new THREE.TorusGeometry(0.3, 0.028, 12, 64), ringMat); ringMesh.position.y = 1.12; ringMesh.rotation.x = -Math.PI / 2; head.add(ringMesh);
+    const glow = new THREE.Mesh(new THREE.PlaneGeometry(1.4, 1.4), new THREE.MeshBasicMaterial({ map: glowTex, transparent: true, depthWrite: false })); glow.position.y = 1.15; glow.rotation.x = -Math.PI / 2; head.add(glow);
     const dot = new THREE.Mesh(new THREE.SphereGeometry(0.02, 8, 8), inkMat); dot.position.set(0, 1.08, 0.5); head.add(dot);
     const { ring, shadow } = platform(0.6);
     const all = new THREE.Group(); all.add(shadow, ring, root);
