@@ -28,6 +28,13 @@ U-joint cross at h ≈72, lower than the plan's h 90 estimate; the neck ring (h 
 - Horn arms: flat, 100 % infill. Spine plate: flat, ears up. Head halves: open side down, 2 perimeters.
 - Everything PETG except TPU servo pads and bumpers (not modelled).
 
+## Torque check
+`python3 analysis/torque_check.py` rebuilds the mass model from the CAD and writes `analysis/TORQUE_CHECK.md`: exact
+pushrod loop closure, servo torques by virtual work, every planned motion checked against each XL330's torque-speed
+line and Current Limit. Results with the current parameters: all joints pass on torque (margin ≥ 1.5); speed, not
+torque, limits fast yaw turns and 90° arm flaps. Recommended settings that came out of it: awake-idle Current Limit
+400 mA (not 300), yaw turn time ≥ 0.18 s for 30°, 0.26 s for 45°, 0.5 s for 90°, arm celebrate ≥ 0.4 s.
+
 ## Sourcing
 See `SOURCING.md` for vendors, part numbers, prices and stock notes (researched 2026-10-30). Three sourcing-driven
 changes are already in `params.py`: 130T belt + 20T pulley on an XL330-M077 yaw servo, Ø11×23 U-joint, cabochon-on-M4 eyes.
